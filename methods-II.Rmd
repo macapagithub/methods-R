@@ -272,6 +272,13 @@ ggpairs(data2[,6:10], aes(colour=factor(data2$diagnosis), alpha=0.2))
 ggpairs(data2[,1:5], aes(colour=factor(data2$diagnosis), alpha=0.2)) 
 ```
 
+```{r warning=FALSE}
+ggplot(data2, aes(x = diagnosis, fill=diagnosis)) +
+geom_histogram(binwidth = .5)
+```
+
+Se debe considerar que la variable target, tiene un sesgo hacia uno de los valores.
+
 Análisis de componentes principales
 
 Análisis factorial
