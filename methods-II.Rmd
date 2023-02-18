@@ -3,13 +3,13 @@ title: "Proyecto Médodos II"
 author: "Mauricio Caicedo Palacio - Fidela Makendengue"
 date: "2022-01-30"
 output:
-  pdf_document: default
   html_document: default
+  pdf_document: default
 editor_options:
   chunk_output_type: inline
 ---
 
-# Introducción 
+# Introducción
 
 En el siguiente trabajo se hace un análisis de componentes principales, análisis factorial y análisis de comglomerados. Se considera la base de datos Heart Disease Diagnosis. Esta base de datos contiene 4 bases de datos relacionadas con el diagnóstico de enfermedades del corazón. Todos los atributos tienen valores numéricos. Los datos fueron recolectados de las cuatro ubicaciones siguientes:
 
@@ -36,3 +36,244 @@ Finalmente, cabe mencionar que en este trabajo se presenta: un análisis previo,
 Las bases de datos y la información relacionada con las mismas, se pueden encontrar en el siguiente enlace:
 
 <https://archive.ics.uci.edu/ml/machine-learning-databases/heart-disease/>
+
+Ahora bien, veamos la información de los nombres de los atributos o las columnas:
+
+1\. age: edad en años.
+
+2\. sex: sexo (1 = masculino; 0 = femenino).
+
+3\. cp: tipo de dolor en el pecho \-- Value 1: angina típica \-- Value 2: angina atípica \-- Value 3: dolor sin angina \-- Value 4: asintomático.
+
+4\. trestbps: presión arterial en reposo (en mm Hg al ingreso en el hospital) 5. chol: colesterol sérico en mg/dl 6. fbs: (azúcar en sangre en ayunas \\\> 120 mg/dl) (1 = verdadero; 0 = falso).
+
+7\. restecg: resultados electrocardiográficos en reposo \-- Valor 0: normal \-- Valor 1: tener anormalidad de onda ST-T (inversiones de onda T y/o ST elevación o depresión de \\\> 0,05 mV) \-- Valor 2: mostrar hipertrofia ventricular izquierda probable o definitiva según el criterio Estes
+
+8\. thalach: frecuencia cardíaca máxima alcanzada.
+
+9\. exang: angina inducida por el ejercicio (1 = sí; 0 = no).
+
+10\. oldpeak: Depresión del ST inducida por el ejercicio en relación con el reposo.
+
+11.slope: pendiente del segmento ST de ejercicio máximo \-- Valor 1: ascendente \-- Valor 2: plano \-- Valor 3: descendente.
+
+12\. ca: número de vasos principales (0-3) coloreados por fluoroscopia.
+
+13\. thal: 3 = normales; 6 = defecto fijo; 7 = defecto reversible.
+
+14\. num: diagnóstico de enfermedad cardíaca (estado de enfermedad angiográfico) \-- Valor 0: \\\< 50% estrechamiento del diámetro \-- Valor 1: \\\> 50% estrechamiento del diámetro (en cualquier vaso principal: los atributos 59 a 68 son vasos).
+
+```{r}
+#Cargamos las librerías que vamos a utilizar para todo el trabajo
+library(GGally)
+library(ggplot2)
+library(DescTools)
+library(binom)
+library(nortest)
+library(stringr)
+library(car)
+library(NbClust)
+library(rgl)
+library(psych)
+library(factoextra)
+library(caret)
+library(GGally)
+library(patchwork)
+library(Stat2Data)
+library(corrplot)
+```
+
+Veamos una descripción sobre el conjunto de datos:
+
+```{r}
+#Cargamos los datos
+data <- read.csv("https://archive.ics.uci.edu/ml/machine-learning-databases/heart-disease/processed.cleveland.data",sep = ",")
+
+#Cambiamos el nombre de las columnas 
+colnames(data) <- c('age', 'sex', 'cp', 'trestbps', 'chol', 'fbs', 'restecg', 'thalach', 'exang', 'oldpeak', 'slope', 'ca', 'thal', 'num')
+
+#Visualizamos las primeras 5 instancias de los datos.
+head(data,5)
+```
+
+```{r}
+tail(data, 3)
+```
+
+En las visualizaciones de los datos se observan valores pequeños desde 0,1,2 hasta 250, 286, de acuerdo a las primeras tres filas.Como también encontramos datos enteros y punto flotante. Veamos la dimensión del conjunto de datos:
+
+```{r}
+dim(data)
+```
+
+Este conjunto de datos contiene la información de 302 pacientes (302 instancias) badados en 14 atributos. A continuación, realizamos un breve preprocesado de datos, para ello analizamos si el conjunto de datos contiene datos nulos.
+
+```{r}
+any(is.na(data))
+```
+
+En efecto, el conjunto de datos no contiene datos nulos, ahora bien, vamos a hacer el estudio de los datos a nivel estadístico, y vamos a denotar a la variable data_num al conjunto de los datos numéricos sin incluir las variables ca y thal, dado que son categóricas, de esta modo, trabajamos sólo con 12 atributos.
+
+```{r}
+#Seleccionamos las variables numéricas sin la variable ca y thal
+nums <- unlist(lapply(data, is.numeric), use.names = FALSE) 
+data_num <- data[ , nums]
+head(data_num, 5)
+```
+
+Resumen global del data frame.
+
+```{r}
+resumen <- apply(data_num, 1,
+                     function(x) c(mean(x),sd(x),quantile(x)))
+rownames(resumen)<- c("Media","DT","Mínimo","Q1","Q2","Q3","Máximo")
+knitr::kable(resumen, digits = 5, align = "c", caption="Resumen global de las variables numéricas")
+```
+
+## Visualización
+
+En la siguiente sección, realizamos algunas gráficas para determinar relaciones entre las variables, distribuciones de los datos, entre otras características que iremos detallando. También, usaremos la notación HDD para denotar el conjunto de datos Heart Disease Diagnosis.
+
+El primero es el gráfico de correlaciones
+
+```{r echo=TRUE}
+#Gráfico de correlaciones
+title <- "Correlaciones entre las variables de HDD"
+#Matriz de correlaciones
+M <- cor(data_num)
+corrplot(M, col = COL2('RdYlBu'), addCoef.col = 'black', tl.pos = 'd')
+corPlot(data_num, min.length = 9, cex = 0.5, alpha = 0.8, colors = TRUE )
+```
+
+Para comprender el gráfico de correlaciones, debemos tener en cuenta que si, el valor que toma es 1, quiere decir que las variables están completamente relacionadas, además el color azul más fuerte significa lo mismo, en tonalidades más claras tenemos una relación menor. Por otro lado, diremos que dos variables no están relacionadas cuando toman valores de -1, también el color rojo representa que no hay relación entre estas variables, donde el rojo más claro como rosa determina un leve incremento de la relación. El color blanco, cuyo valor asociado es el cero, indica que hay un 50% de relación entre las variables. Algunas inferencias del gráfico anterior son:
+
+1\. Las variables que están 100% relacionadas son cada una con ella misma.
+
+2\. Las variables más relacionadas son: slope con oldpeak (0.58), num con oldpeak(0.51), num con cp (0.41), num con slope (0.39), exang con cop (0.38).
+
+3\. Las variables menos relacionadas son: thalac con num (-42), thalac con age (-0.39), thalac con slope (-0.39), thalac con exang (-0.38), thalach con oldpeak (-0.34), thalac con oldpeak (-0.34).
+
+4\. La variable thalac es la que está menos relacionada con las variables: num, slope, oldpeak, exang, age, cp. Podemos pensar en eliminar esta variable del conjunto de datos.
+
+Como consecuencia, se elimina la variable thalac y seguimos el estudio con 11 atributos.
+
+```{r}
+#Seleccionamos las variables numéricas sin la variable ca, thal y thalac
+
+data_num <- data_num[,-8] # 8 es el índice de la variable thalac
+head(data_num, 4)
+```
+
+A continuación, analizamos la correlación entre las variables mediante las distancias, mediante la métrica del maximum. Para su visualización utilizamos un mapa de calor con 15 instancias. Sómo visualizamos las primeras 2 filas
+
+```{r}
+# Matriz de distancias
+distancias <- as.matrix(dist(data_num, method = 'maximum'))
+head(distancias,2)
+```
+
+Pero no se interpretan muy bien estos valores, para ello, realizamos un mapa de calor para 15 instancias con la métrica de pearson.
+
+```{r}
+# Correlación basada en el método de la distancia
+res.dist <- get_dist(data_num[1:15,], method = "pearson")
+
+# Visualize the dissimilarity matrix
+fviz_dist(res.dist, lab_size = 5)
+```
+
+En este gráfico se representan de color azul las distancias más grandes, siendo el valor máximo 0.12 y el mínimo 0.0 con el color rosa, no obstante podemos observar que son más los valores cuyas distancias son mínimas respecto a los valores con mayor distancias.
+
+Teniendo en cuenta que en el conjunto de datos encontramos valores desde 0 a 259, para tener una estandarización de los mismos, consideramos escalar el conjunto de datos, donde cada atributo tiene media 0 y desviación típica de 1. No escalamos la variable objetivo num. Por otro lado, vamos a cambiar el nombre de la variable objetivo de num a 'diagnosis'.
+
+```{r}
+#Escalamos el conjunto de datos sin las variables: ca, thal, thalach, num.
+#tem <- data_num[,-12]
+#tem <- data_num[,-8]
+data_scale <- scale(data_num[,-11]) # 11 es el índice de la variable objetivo num
+head(data_scale,3)
+```
+
+```{r}
+#Vector con datos escalados
+vector1 <- data_scale
+
+#Vector de la variable objetivo
+vector2 <- data$num
+
+# Combinamos los dos vectores usando cbind()
+data1 <- cbind(vector1,vector2)
+```
+
+```{r}
+head(data1, 2)
+```
+
+```{r echo=TRUE}
+# Aplicamos los nombres a las columnas
+colnames(data1) <- c('age', 'sex', 'cp', 'trestbps', 'chol', 'fbs',
+                    'restecg', 'exang','oldpeak', 'slope','diagnosis')
+
+#Lo convertimos en un dataframe
+data1 <- as.data.frame(data1)
+head(data1, 3)
+```
+
+Si analizamos los valores del atributo 'diagnosis', podemos ver que toma un valor de 2, pero de acuerdo a la información del conjunto de datos, esta variable sólo puede tomar valores de 0 y 1. Veamos qué valores numéricos tiene este atributo
+
+```{r echo=TRUE}
+freq <- as.data.frame(table(data1$diagnosis))
+freq
+```
+
+Basado en la tabla anterior, la variable 'diagnosis' toma valores de 0,1,2,3 y 4. En consecuencia, vamos a remover los datos con valores de 2,3 y 4. Ahora bien, una vez terminado esto, vamos a clasificar los datos de 0 como 'healthy' y de 1 como 'heartDisease'.
+
+```{r}
+data1 <- data1[(data1$diagnosis=="0" | data1$diagnosis=="1"),]
+head(data1)
+```
+
+Podemos ver que la variable diagnosis toma valores de 0 y 1 como esperábamos. Ahora la dimensión del conjunto de datos es 218 instancias y 11 columnas.
+
+```{r}
+dim(data1)
+```
+
+Por lo que hemos reducido el número de instancias de 302 a 218. Para una mejor comprensión de los datos, vamos a
+
+```{r}
+# Reasignamos los diagnósticos como healty y heartDisease
+data1$diagnosis[data1$diagnosis == 0] <- "healthy"
+data1$diagnosis[data1$diagnosis == 1] <- "heartDisease"
+
+#Visualizamos los datos de las 3 primeras columnas
+head(data1,3)
+```
+
+A partir de ahora nuestros datos están estandarizados.
+
+```{r}
+data2 <- as.data.frame(data1)
+
+#Activamos las variables del dataset para llamarlas sin recurrir al conjunto de datos "data2"
+attach(data2)
+head(data2)
+```
+
+También podemos visualizar mediante un gráfico de pares (pair-plot), las relaciones de los datos escalados de acuerdo a su diagnóstico
+
+```{r}
+# Pair-plot de las características
+ggpairs(data2[,6:10], aes(colour=factor(data2$diagnosis), alpha=0.2))
+```
+
+```{r}
+# Pair-plot de las características
+ggpairs(data2[,1:5], aes(colour=factor(data2$diagnosis), alpha=0.2)) 
+```
+
+Análisis de componentes principales
+
+Análisis factorial
+
+Análisis de conglomerados
