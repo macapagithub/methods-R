@@ -45,7 +45,11 @@ Ahora bien, veamos la información de los nombres de los atributos o las columna
 
 3\. cp: tipo de dolor en el pecho \-- Value 1: angina típica \-- Value 2: angina atípica \-- Value 3: dolor sin angina \-- Value 4: asintomático.
 
-4\. trestbps: presión arterial en reposo (en mm Hg al ingreso en el hospital) 5. chol: colesterol sérico en mg/dl 6. fbs: (azúcar en sangre en ayunas \\\> 120 mg/dl) (1 = verdadero; 0 = falso).
+4\. trestbps: presión arterial en reposo (en mm Hg al ingreso en el hospital)
+
+5\. chol: colesterol sérico en mg/dl
+
+6\. fbs: (azúcar en sangre en ayunas \\\> 120 mg/dl) (1 = verdadero; 0 = falso).
 
 7\. restecg: resultados electrocardiográficos en reposo \-- Valor 0: normal \-- Valor 1: tener anormalidad de onda ST-T (inversiones de onda T y/o ST elevación o depresión de \\\> 0,05 mV) \-- Valor 2: mostrar hipertrofia ventricular izquierda probable o definitiva según el criterio Estes
 
@@ -142,6 +146,9 @@ title <- "Correlaciones entre las variables de HDD"
 #Matriz de correlaciones
 M <- cor(data_num)
 corrplot(M, col = COL2('RdYlBu'), addCoef.col = 'black', tl.pos = 'd')
+```
+
+```{r}
 corPlot(data_num, min.length = 9, cex = 0.5, alpha = 0.8, colors = TRUE )
 ```
 
@@ -264,22 +271,142 @@ También podemos visualizar mediante un gráfico de pares (pair-plot), las relac
 
 ```{r}
 # Pair-plot de las características
-ggpairs(data2[,6:10], aes(colour=factor(data2$diagnosis), alpha=0.2))
+ggpairs(data2[,1:5], aes(colour=factor(data2$diagnosis), alpha=0.2)) 
 ```
 
 ```{r}
 # Pair-plot de las características
-ggpairs(data2[,1:5], aes(colour=factor(data2$diagnosis), alpha=0.2)) 
+ggpairs(data2[,6:10], aes(colour=factor(data2$diagnosis), alpha=0.2))
 ```
 
 ```{r warning=FALSE}
-ggplot(data2, aes(x = diagnosis, fill=diagnosis)) +
-geom_histogram(binwidth = .5)
+ggplot(data2, 
+       aes(x = age, 
+           y=chol)) +
+geom_point()
 ```
 
-Se debe considerar que la variable target, tiene un sesgo hacia uno de los valores.
+Antes de continuar con el analisis, con los datos estandarizados, vale la pena obsercar la relación entre la edad y los niveles de azucar en la sangre. Lo anterior se ve mejor sin la normalización.
 
-Análisis de componentes principales
+```{r}
+ggplot(data_num, 
+       aes(x = age, 
+           y=chol)) +
+geom_point()
+```
+
+Por otro lado, en general las personas con problemas del corazón tienen una edad más avanzada.
+
+```{r}
+p0 <- ggplot(data2, aes(x = age, fill = diagnosis)) +
+geom_histogram(binwidth = .5)
+p1 <- ggplot(data2, aes(diagnosis, age)) + geom_boxplot()
+p0 + p1
+```
+
+```{r}
+p2 <- ggplot(data2, aes(x = cp, fill = diagnosis)) +
+geom_histogram(binwidth = .5)
+p3 <- ggplot(data2, aes(diagnosis, cp)) + geom_boxplot()
+p2 + p3
+```
+
+## Modelado usando submuestras
+
+Definimos la submuestra del conjunto de datos. Examinaremos la capacidad predictiva de un modelo, para ello, vamos a utilizar un 70% de los objetos para entrenar y un 30% para evaluar dicho modelo.
+
+```{r}
+n <- dim(data2)[1]
+set.seed(12)
+indices_aprendizaje <- sample(n, round(.7*n))
+data_aprendizaje <- data2[indices_aprendizaje, ]
+head(data_aprendizaje)
+```
+
+Veamos el conjunto de test:
+
+```{r}
+data_test <- data2[-indices_aprendizaje, ]
+head(data_test)
+```
+
+Ya tenemos las submuestras, a partir de aquí vamos a entrenar un modelo y posteriormente testar. Para empezar vamos a utilizar un modelo de regresión lineal múltiple que explique la salud del corazón en función del resto de la variables.
+
+Ajustamos el modelo usando los datos de entrenamiento.
+
+```{r}
+na.omit(data_aprendizaje)
+```
+
+```{r}
+unique(data_aprendizaje$diagnosis)
+```
+
+```{r}
+data_aprendizaje <- na.omit(data_aprendizaje)
+data_aprendizaje$diagnosis[data_aprendizaje$diagnosis == "healthy"] <- 0 
+data_aprendizaje$diagnosis[data_aprendizaje$diagnosis == "heartDisease"] <- 1
+
+modelo <- lm(diagnosis ~ ., data=data_aprendizaje)
+summary(modelo)
+```
+
+Las variables más relevantes son: sex, cp, exang y slope. Podría considerar, realizar un modelado con estás variables, y comparar el resultado con la anterior, veamos.
+
+```{r}
+modelo2 <- lm(diagnosis ~ sex + cp + exang + slope + chol, data=data_aprendizaje)
+summary(modelo2)
+```
+
+El r cuadrado ajustado es un poco mejor que usando todas las variables disponibles. Veamos un poco más la validación de estos modelos.
+
+```{r}
+# Q-Q plot
+qqnorm(rstandard(modelo))
+qqline(rstandard(modelo), lty = 2)
+
+# frente a valores ajustados: comprobar que la nube sea dispersa
+plot(rstandard(modelo) ~ fitted(modelo))
+abline(h = 0, lty = 2)
+abline(h = c(-2, 2), lty = 3, col = 4)
+
+# Comprobar si se rechaza la normalidad de los residuos
+shapiro.test(rstandard(modelo))
+# Varios gráficos de validación, incluye alguno de los resultados anteriores
+plot(modelo)
+# Lo realizado hasta aquí nos podría servir también para validar un modelo ANOVA,
+# por ejemplo para: 'modelo <- aov(Sepal.Length ~ Species, data = iris)'
+# Comprobar si son dispersas las nubes de los residuos frente a las covariables
+par(mfrow = c(1, 2))
+plot(resid(modelo) ~ data_aprendizaje$diagnosis)
+plot(resid(modelo) ~ data_aprendizaje$diagnosis)
+par(mfrow = c(1, 1))
+```
+
+```{r}
+qqnorm(rstandard(modelo2))
+qqline(rstandard(modelo2), lty = 2)
+
+plot(rstandard(modelo2) ~ fitted(modelo2))
+abline(h = 0, lty = 2)
+abline(h = c(-2, 2), lty = 3, col = 4)
+
+# Comprobar si se rechaza la normalidad de los residuos
+shapiro.test(rstandard(modelo2))
+# Varios gráficos de validación, incluye alguno de los resultados anteriores
+plot(modelo2)
+# Lo realizado hasta aquí nos podría servir también para validar un modelo ANOVA,
+# por ejemplo para: 'modelo <- aov(Sepal.Length ~ Species, data = iris)'
+# Comprobar si son dispersas las nubes de los residuos frente a las covariables
+par(mfrow = c(1, 2))
+plot(resid(modelo2) ~ data_aprendizaje$diagnosis)
+plot(resid(modelo2) ~ data_aprendizaje$diagnosis)
+par(mfrow = c(1, 1))
+```
+
+# Análisis de componentes principales
+
+Tiendo en cuenta
 
 Análisis factorial
 
