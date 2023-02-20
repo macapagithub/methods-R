@@ -406,7 +406,56 @@ par(mfrow = c(1, 1))
 
 # Análisis de componentes principales
 
-Tiendo en cuenta
+Tiendo en cuenta que el segundo modelo podría funcionar mejor que el primero, teniendo menos variables, vamos a realizar un análisis de las componentes principales en el dataset. Este análisis nos permite entender la varianza en función de la cantidad de variables.
+
+```{r}
+head(data2, 4)
+```
+
+```{r}
+X <- as.matrix(data2[, -11])
+p <- ncol(X)
+S <- cov(X)
+var_tot <- sum(diag(S))
+var_tot
+```
+
+```{r}
+acp_cov <- prcomp(data2[,-11])
+acp_cov
+summary(acp_cov)
+plot(acp_cov, type = "l", pch = 19)
+```
+
+```{r}
+head(acp_cov$x)
+cov(acp_cov$x[, 1:2])
+```
+
+```{r}
+# Para interpretar
+acp_cov$rotation[, 1:2]
+cor(data2[, -11], acp_cov$x[, 1:2])
+```
+
+```{r}
+diag <- cbind(data2, acp_cov$x[, 1:2])
+diag
+```
+
+```{r}
+ggplot(diag, aes(x = PC1, y = data2$diagnosis)) + geom_point()
+```
+
+```{r}
+ggplot(diag, aes(x = PC1, y = PC2, color = data2$diagnosis)) + geom_point()
+```
+
+El biplot nos sirve para resumir las relaciones entre variables, entre objetos y entre variables y objetos.
+
+```{r fig.height=6, fig.width=6}
+biplot(acp_cov, scale = 0, cex = 0.6, col = c("blue4", "brown3"))
+```
 
 Análisis factorial
 
