@@ -124,7 +124,7 @@
 \section{Introducción}\label{introducciuxf3n}}
 
 En el siguiente trabajo se hace un análisis de componentes principales,
-análisis factorial y análisis de comglomerados. Se considera la base de
+análisis factorial y análisis de conglomerados. Se considera la base de
 datos Heart Disease Diagnosis. Esta base de datos contiene 4 bases de
 datos relacionadas con el diagnóstico de enfermedades del corazón. Todos
 los atributos tienen valores numéricos. Los datos fueron recolectados de
@@ -153,7 +153,7 @@ proporcionan 14 de ellos, cuando se descarga de la url, dado que estos
 son los que se utilizan para estudios relacionados con Machine Learning.
 
 Los autores de las bases de datos son: 1. Instituto Húngaro de
-Cardiología. Budapest: Andras Janosi, MD 2. Hospital Universitario,
+Cardiologia. Budapest: Andras Janosi, MD 2. Hospital Universitario,
 Zúrich, Suiza: William Steinbrunn, M.D.~3. Hospital Universitario,
 Basilea, Suiza: Matthias Pfisterer, M.D.~4. VA Centro Médico, Long Beach
 y Fundación de la Clínica Cleveland: Robert Detrano, MD, Ph.D.
@@ -366,7 +366,7 @@ conjunto de datos:
 \end{verbatim}
 
 Este conjunto de datos contiene la información de 302 pacientes (302
-instancias) badados en 14 atributos. A continuación, realizamos un breve
+instancias) basados en 14 atributos. A continuación, realizamos un breve
 preprocesado de datos, para ello analizamos si el conjunto de datos
 contiene datos nulos.
 
@@ -1135,8 +1135,8 @@ con 11 atributos.
 \end{verbatim}
 
 A continuación, analizamos la correlación entre las variables mediante
-las distancias, mediante la métrica del maximum. Para su visualización
-utilizamos un mapa de calor con 15 instancias. Sómo visualizamos las
+las distancias, mediante la métrica del máximum. Para su visualización
+utilizamos un mapa de calor con 15 instancias. Sólo visualizamos las
 primeras 2 filas
 
 \begin{Shaded}
@@ -1444,8 +1444,8 @@ relaciones de los datos escalados de acuerdo a su diagnóstico
 
 \includegraphics{methods-II_files/figure-latex/unnamed-chunk-24-1.pdf}
 
-Antes de continuar con el analisis, con los datos estandarizados, vale
-la pena obsercar la relación entre la edad y los niveles de azucar en la
+Antes de continuar con el análisis, con los datos estandarizados, vale
+la pena observar la relación entre la edad y los niveles de azúcar en la
 sangre. Lo anterior se ve mejor sin la normalización.
 
 \begin{Shaded}
@@ -2196,6 +2196,10 @@ entender la varianza en función de la cantidad de variables.
 
 \includegraphics{methods-II_files/figure-latex/unnamed-chunk-38-1.pdf}
 
+No es claro que hay un codo, es decir, no hay un punto donde la varianza
+deja de decrecer considerablemente. Veamos como se ven las primeras dos
+componentes.
+
 \begin{Shaded}
 \begin{Highlighting}[]
 \FunctionTok{head}\NormalTok{(acp\_cov}\SpecialCharTok{$}\NormalTok{x)}
@@ -2286,6 +2290,8 @@ entender la varianza en función de la cantidad de variables.
 
 \includegraphics{methods-II_files/figure-latex/unnamed-chunk-42-1.pdf}
 
+Con una componente no es clara la utilidad de las componentes.
+
 \begin{Shaded}
 \begin{Highlighting}[]
 \FunctionTok{ggplot}\NormalTok{(diag, }\FunctionTok{aes}\NormalTok{(}\AttributeTok{x =}\NormalTok{ PC1, }\AttributeTok{y =}\NormalTok{ PC2, }\AttributeTok{color =}\NormalTok{ data2}\SpecialCharTok{$}\NormalTok{diagnosis)) }\SpecialCharTok{+} \FunctionTok{geom\_point}\NormalTok{()}
@@ -2294,8 +2300,9 @@ entender la varianza en función de la cantidad de variables.
 
 \includegraphics{methods-II_files/figure-latex/unnamed-chunk-43-1.pdf}
 
-El biplot nos sirve para resumir las relaciones entre variables, entre
-objetos y entre variables y objetos.
+Dos componentes no permiten ver claramente la diferencia entre las dos
+categorías. Por otro lado, el biplot nos sirve para resumir las
+relaciones entre variables, entre objetos y entre variables y objetos.
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -2305,6 +2312,11 @@ objetos y entre variables y objetos.
 
 \includegraphics{methods-II_files/figure-latex/unnamed-chunk-44-1.pdf}
 
+En este caso la dispersión de las variables no permite ver las
+diferentes contribuciones a las primeras dos componentes principales.
+Esto podría deberse a la poca diferencia de varianza entre las
+variables.
+
 \begin{Shaded}
 \begin{Highlighting}[]
 \FunctionTok{plot}\NormalTok{(acp\_cov, }\AttributeTok{main=}\StringTok{"Varianza de las componentes"}\NormalTok{)}
@@ -2312,6 +2324,9 @@ objetos y entre variables y objetos.
 \end{Shaded}
 
 \includegraphics{methods-II_files/figure-latex/unnamed-chunk-45-1.pdf}
+
+Podríamos ver de manera más clara como se está acumulando la varianza en
+las componentes principales.
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -2330,11 +2345,25 @@ objetos y entre variables y objetos.
 
 \includegraphics{methods-II_files/figure-latex/unnamed-chunk-46-1.pdf}
 
-Contrario a lo que conjeturamos las variables tiene un aporte similar en
-cuanto a la variabilidad del dataset.
+Debido a la poca acumulación de varianza en las primeras componentes, se
+tiene mas de un cincuenta por ciento de la varianza en las primeras
+cuatro componentes principales.
 
 \hypertarget{anuxe1lisis-factorial}{%
 \section{Análisis factorial}\label{anuxe1lisis-factorial}}
+
+El objetivo de este análisis será identificar las variables más
+relevantes que influyen en la presencia de enfermedades cardíacas en los
+pacientes. Para ello, utilizaremos técnicas de extracción de factores
+para encontrar patrones en las variables y reducir el número de
+dimensiones a unas pocas variables latentes que expliquen la mayor
+cantidad de variabilidad en los datos.
+
+Una vez identificados los factores, trataremos de utilizar esta
+información para entender mejor la relación entre las diferentes
+variables y cómo influyen en la presencia de enfermedades cardíacas.
+Este análisis puede proporcionar información valiosa para mejorar la
+prevención de las enfermedades cardíacas en la población en general.
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -2422,8 +2451,10 @@ Porcentajes acumulados de varianza.
 ##  [8]  89.42949  95.44548 100.00000
 \end{verbatim}
 
-Elegimos el número de factores y obtenemos la estimación de la matriz de
-cargas.
+Al igual que en los componentes principales, para tener más de cincuenta
+por ciento de la varianza hay que tomar los primeros cuatro factores.
+Ahora, elegimos el número de factores y obtenemos la estimación de la
+matriz de cargas.
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -2442,8 +2473,6 @@ cargas.
 \end{Highlighting}
 \end{Shaded}
 
-Comunalidades
-
 \begin{Shaded}
 \begin{Highlighting}[]
 \NormalTok{h2 }\OtherTok{\textless{}{-}} \FunctionTok{rowSums}\NormalTok{(L}\SpecialCharTok{\^{}}\DecValTok{2}\NormalTok{)}
@@ -2455,8 +2484,6 @@ Comunalidades
 ##  [1] 0.5595388 0.4515534 0.5798768 0.4389499 0.5345182 0.2613322 0.2091074
 ##  [8] 0.4972681 0.6278835 0.5575756
 \end{verbatim}
-
-Unicidades
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -2470,7 +2497,7 @@ Unicidades
 ##  [8] 0.5027319 0.3721165 0.4424244
 \end{verbatim}
 
-Estimación de la matriz de correlaciones R
+Estimamos la matriz de correlaciones.
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -2504,7 +2531,31 @@ Estimación de la matriz de correlaciones R
 ## [10,]  0.20388774  0.38725420  0.58961230  1.00000000
 \end{verbatim}
 
-Matriz residual
+Se puede observar que algunas variables están moderadamente
+correlacionadas, mientras que otras tienen una correlación más débil.
+Por ejemplo, la presión arterial (trestbps) y el colesterol (chol)
+tienen una correlación moderada positiva de 0.26, mientras que el sexo
+(sex) y y el colesterol (chol) tienen una correlación negativa moderada
+de -0.43. La correlación más fuerte es de 0.58, que se da entre la
+variable que mide la lesión al miocardio (oldpeak: Depresión del ST) y
+la pendiente del segmento ST (slope). Veamos la matriz residual.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{head}\NormalTok{(data2,}\DecValTok{3}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##         age        sex         cp    trestbps        chol        fbs    restecg
+## 2  1.392608  0.6867343  0.8750283 -0.66122880 -0.34206509 -0.4122838  1.0184230
+## 3 -1.925916  0.6867343 -0.1736167 -0.09344064  0.06289604 -0.4122838 -0.9917976
+## 4 -1.483446 -1.4513456 -1.2222618 -0.09344064 -0.82416167 -0.4122838  1.0184230
+##        exang   oldpeak      slope    diagnosis
+## 2  1.4295857 1.3479263  0.6601533 heartDisease
+## 3 -0.6971871 2.1233048  2.2943034      healthy
+## 4 -0.6971871 0.3140882 -0.9739967      healthy
+\end{verbatim}
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -2517,7 +2568,8 @@ Matriz residual
 ## [1] 1.287301
 \end{verbatim}
 
-Representación gráfica de las cargas en el espacio de los factores
+Ahora, la representación gráfica de las cargas en el espacio de los
+factores.
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -2531,9 +2583,13 @@ Representación gráfica de las cargas en el espacio de los factores
 \end{Highlighting}
 \end{Shaded}
 
-\includegraphics{methods-II_files/figure-latex/unnamed-chunk-55-1.pdf}
+\includegraphics{methods-II_files/figure-latex/unnamed-chunk-56-1.pdf}
 
-Rotación de factores: método varimax
+No es claro que algunas variables carguen mas en uno de los factores,
+con excepción la variable sexo, parece tener una carga considerable en
+el factor dos.
+
+Realizamos una rotación de factores:
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -2570,8 +2626,8 @@ Rotación de factores: método varimax
 ## [3,] 0.2398061  0.2626783  0.93460856
 \end{verbatim}
 
-Representación gráfica de las cargas en el espacio de los factores
-rotados.
+Realizamos una representación gráfica de las cargas en el espacio de los
+factores rotados.
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -2585,7 +2641,68 @@ rotados.
 \end{Highlighting}
 \end{Shaded}
 
-\includegraphics{methods-II_files/figure-latex/unnamed-chunk-57-1.pdf}
+\includegraphics{methods-II_files/figure-latex/unnamed-chunk-58-1.pdf}
+
+Con los factores rotados se ve una incidencia más fuerte de la depresión
+del ST inducida por el ejercicio en relación con el reposo (oldpeak),
+angina inducida por el ejercicio (exang), pendiente del segmento ST
+(slope) y en menor medida, el tipo de dolor en el pecho (cp) y el azúcar
+en sangre en ayunas (fbs). Por otro lado veamos que, sin rotaciones
+funciona mejor el análisis y aumentar el número de factores no mejora de
+manera considerable.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{diagnosis\_af }\OtherTok{\textless{}{-}} \FunctionTok{principal}\NormalTok{(data2[, }\SpecialCharTok{{-}}\NormalTok{(}\DecValTok{11}\NormalTok{)], }\AttributeTok{nfactors =} \DecValTok{4}\NormalTok{)}
+\NormalTok{diagnosis\_af}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Principal Components Analysis
+## Call: principal(r = data2[, -(11)], nfactors = 4)
+## Standardized loadings (pattern matrix) based upon correlation matrix
+##            RC2   RC1   RC3   RC4   h2   u2 com
+## age       0.71  0.18  0.04 -0.16 0.56 0.44 1.2
+## sex      -0.21  0.10  0.07  0.76 0.63 0.37 1.2
+## cp       -0.01 -0.06  0.82 -0.15 0.71 0.29 1.1
+## trestbps  0.60  0.07 -0.23  0.18 0.45 0.55 1.5
+## chol      0.61 -0.15  0.11 -0.36 0.54 0.46 1.9
+## fbs       0.31 -0.12 -0.10  0.62 0.50 0.50 1.6
+## restecg   0.47  0.08  0.13  0.20 0.29 0.71 1.6
+## exang     0.07  0.23  0.75  0.15 0.65 0.35 1.3
+## oldpeak   0.13  0.84  0.08  0.05 0.73 0.27 1.1
+## slope     0.04  0.85  0.05 -0.02 0.72 0.28 1.0
+## 
+##                        RC2  RC1  RC3  RC4
+## SS loadings           1.61 1.56 1.36 1.23
+## Proportion Var        0.16 0.16 0.14 0.12
+## Cumulative Var        0.16 0.32 0.45 0.58
+## Proportion Explained  0.28 0.27 0.24 0.21
+## Cumulative Proportion 0.28 0.55 0.79 1.00
+## 
+## Mean item complexity =  1.4
+## Test of the hypothesis that 4 components are sufficient.
+## 
+## The root mean square of the residuals (RMSR) is  0.11 
+##  with the empirical chi square  256.76  with prob <  1.1e-48 
+## 
+## Fit based upon off diagonal values = 0.35
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{fa.diagram}\NormalTok{(diagnosis\_af)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{methods-II_files/figure-latex/unnamed-chunk-60-1.pdf}
+
+Si tomamos cuatro componentes, en la primera aparecen la depresión del
+ST inducida por el ejercicio (oldpeak) y la pendiente del segmento ST
+(slope), que como y mencionamos estás muy correlacionadas. Pero en
+general no permiten ver una incidencia de ciertas variables en los
+factores.
 
 \hypertarget{anuxe1lisis-de-conglomerados}{%
 \section{Análisis de conglomerados}\label{anuxe1lisis-de-conglomerados}}
@@ -2597,7 +2714,7 @@ utiliza para agrupar objetos similares en grupos o clusters.
 \subsection{Kmeans}\label{kmeans}}
 
 Entre los métodos de análisis de conglomerados, el algoritmo k-means es
-uno de los más populares y ampliamente utilizados. El algoritmo k-means
+uno de los más populares y amplia mente utilizados. El algoritmo k-means
 es una técnica de particionamiento que busca dividir los datos en k
 clústeres, de tal manera que las observaciones dentro de cada clúster
 sean lo más similares posible entre sí y lo más diferentes posible de
@@ -2718,7 +2835,7 @@ que los grupos resultantes sean relevantes
 \end{Highlighting}
 \end{Shaded}
 
-\includegraphics{methods-II_files/figure-latex/unnamed-chunk-60-1.pdf}
+\includegraphics{methods-II_files/figure-latex/unnamed-chunk-63-1.pdf}
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -2741,6 +2858,24 @@ normalizadas. En este caso, es posible que el algoritmo k-means produzca
 clústeres que no reflejen la verdadera estructura subyacente de los
 datos, ya que está des-balanceado el dataset.
 
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ncluster }\OtherTok{\textless{}{-}} \DecValTok{1}\SpecialCharTok{:}\DecValTok{20}
+\NormalTok{distorsion }\OtherTok{\textless{}{-}} \FunctionTok{sapply}\NormalTok{(ncluster,}
+\ControlFlowTok{function}\NormalTok{(K) }\FunctionTok{kmeans}\NormalTok{(data2[,}\SpecialCharTok{{-}}\DecValTok{11}\NormalTok{],}
+\NormalTok{K, }\AttributeTok{nstart =} \DecValTok{10}\NormalTok{)}\SpecialCharTok{$}\NormalTok{tot.withinss)}
+
+\FunctionTok{plot}\NormalTok{(ncluster,}
+\NormalTok{distorsion,}
+\AttributeTok{type =} \StringTok{"b"}\NormalTok{,}
+\AttributeTok{pch =} \DecValTok{19}\NormalTok{,}
+\AttributeTok{xlab =} \StringTok{"K"}\NormalTok{,}
+\AttributeTok{ylab =} \StringTok{"Distorsión"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{methods-II_files/figure-latex/unnamed-chunk-64-1.pdf}
+
 \hypertarget{clustering-jeruxe1rquico-agregativo}{%
 \subsection{Clustering jerárquico
 agregativo}\label{clustering-jeruxe1rquico-agregativo}}
@@ -2754,7 +2889,8 @@ y, a continuación, combinan gradualmente los grupos más similares hasta
 que se alcanza un único grupo que contiene todas las instancias u
 observaciones. Este proceso de agrupamiento se representa mediante un
 dendrograma, que es una representación gráfica de la estructura
-jerárquica de los grupos.~
+jerárquica de los grupos, nuestro caso no mostramos está representación
+por la cantidad de datos.~
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -2762,7 +2898,7 @@ jerárquica de los grupos.~
 \end{Highlighting}
 \end{Shaded}
 
-\includegraphics{methods-II_files/figure-latex/unnamed-chunk-61-1.pdf}
+\includegraphics{methods-II_files/figure-latex/unnamed-chunk-65-1.pdf}
 
 \begin{verbatim}
 ## *** : The Hubert index is a graphical method of determining the number of clusters.
@@ -2772,7 +2908,7 @@ jerárquica de los grupos.~
 ## 
 \end{verbatim}
 
-\includegraphics{methods-II_files/figure-latex/unnamed-chunk-61-2.pdf}
+\includegraphics{methods-II_files/figure-latex/unnamed-chunk-65-2.pdf}
 
 \begin{verbatim}
 ## *** : The D index is a graphical method of determining the number of clusters. 
@@ -2808,7 +2944,7 @@ jerárquica de los grupos.~
 ## Warning in pf(beale, pp, df2): NaNs produced
 \end{verbatim}
 
-\includegraphics{methods-II_files/figure-latex/unnamed-chunk-61-3.pdf}
+\includegraphics{methods-II_files/figure-latex/unnamed-chunk-65-3.pdf}
 
 \begin{verbatim}
 ## *** : The Hubert index is a graphical method of determining the number of clusters.
@@ -2818,7 +2954,7 @@ jerárquica de los grupos.~
 ## 
 \end{verbatim}
 
-\includegraphics{methods-II_files/figure-latex/unnamed-chunk-61-4.pdf}
+\includegraphics{methods-II_files/figure-latex/unnamed-chunk-65-4.pdf}
 
 \begin{verbatim}
 ## *** : The D index is a graphical method of determining the number of clusters. 
@@ -2852,7 +2988,7 @@ jerárquica de los grupos.~
 ## Warning in pf(beale, pp, df2): NaNs produced
 \end{verbatim}
 
-\includegraphics{methods-II_files/figure-latex/unnamed-chunk-61-5.pdf}
+\includegraphics{methods-II_files/figure-latex/unnamed-chunk-65-5.pdf}
 
 \begin{verbatim}
 ## *** : The Hubert index is a graphical method of determining the number of clusters.
@@ -2862,7 +2998,7 @@ jerárquica de los grupos.~
 ## 
 \end{verbatim}
 
-\includegraphics{methods-II_files/figure-latex/unnamed-chunk-61-6.pdf}
+\includegraphics{methods-II_files/figure-latex/unnamed-chunk-65-6.pdf}
 
 \begin{verbatim}
 ## *** : The D index is a graphical method of determining the number of clusters. 
@@ -2899,7 +3035,7 @@ jerárquica de los grupos.~
 ## Warning in pf(beale, pp, df2): NaNs produced
 \end{verbatim}
 
-\includegraphics{methods-II_files/figure-latex/unnamed-chunk-61-7.pdf}
+\includegraphics{methods-II_files/figure-latex/unnamed-chunk-65-7.pdf}
 
 \begin{verbatim}
 ## *** : The Hubert index is a graphical method of determining the number of clusters.
@@ -2909,7 +3045,7 @@ jerárquica de los grupos.~
 ## 
 \end{verbatim}
 
-\includegraphics{methods-II_files/figure-latex/unnamed-chunk-61-8.pdf}
+\includegraphics{methods-II_files/figure-latex/unnamed-chunk-65-8.pdf}
 
 \begin{verbatim}
 ## *** : The D index is a graphical method of determining the number of clusters. 
@@ -2985,14 +3121,22 @@ variable en particular.
 \end{Highlighting}
 \end{Shaded}
 
-\includegraphics{methods-II_files/figure-latex/unnamed-chunk-63-1.pdf}
+\includegraphics{methods-II_files/figure-latex/unnamed-chunk-67-1.pdf}
 
 Básicamente está realizando un solo grupo. La técnica funcionaría mejor
 si balanceamos los datos.
 
-\hypertarget{bibliogruxe1fica}{%
-\subsection{Bibliográfica}\label{bibliogruxe1fica}}
+\hypertarget{bibliografuxeda}{%
+\section{Bibliografía}\label{bibliografuxeda}}
 
-Libro
+{[}1{]} W. Larry, All of Statistics, 1st ed.~Springer Science, 2004.
+{[}2{]} R Core Team, `R: A Language and Environment for Statistical
+Computing'. Vienna, Austria, 2018. {[}Online{]}. Available:
+\url{https://www.R-project.org/} {[}3{]} Rs. Team, `RStudio: Integrated
+Development Environment for R'. RStudio, Inc., 2022. {[}4{]} Higueras.
+H. Manuel, Notas de Clase. 2022. {[}5{]} E. Brian, H. Torsten, An
+Introduction to Applied Multivariate Analysis with R, 1st ed.~Springer
+Science, 2011. {[}6{]} P. Daniel, Análisis de Datos Multivariantes,
+2014.
 
 \end{document}

@@ -11,7 +11,7 @@ editor_options:
 
 # Introducción
 
-En el siguiente trabajo se hace un análisis de componentes principales, análisis factorial y análisis de comglomerados. Se considera la base de datos Heart Disease Diagnosis. Esta base de datos contiene 4 bases de datos relacionadas con el diagnóstico de enfermedades del corazón. Todos los atributos tienen valores numéricos. Los datos fueron recolectados de las cuatro ubicaciones siguientes:
+En el siguiente trabajo se hace un análisis de componentes principales, análisis factorial y análisis de conglomerados. Se considera la base de datos Heart Disease Diagnosis. Esta base de datos contiene 4 bases de datos relacionadas con el diagnóstico de enfermedades del corazón. Todos los atributos tienen valores numéricos. Los datos fueron recolectados de las cuatro ubicaciones siguientes:
 
 -   Fundación de la Clínica Cleveland (cleveland.data)
 
@@ -25,7 +25,7 @@ En particular, nosotros utilizaremos la base de datos de Cleveland, donde la var
 
 Las bases de datos tienen 76 atributos sin procesar, sin embargo solo se proporcionan 14 de ellos, cuando se descarga de la url, dado que estos son los que se utilizan para estudios relacionados con Machine Learning.
 
-Los autores de las bases de datos son: 1. Instituto Húngaro de Cardiología. Budapest: Andras Janosi, MD 2. Hospital Universitario, Zúrich, Suiza: William Steinbrunn, M.D. 3. Hospital Universitario, Basilea, Suiza: Matthias Pfisterer, M.D. 4. VA Centro Médico, Long Beach y Fundación de la Clínica Cleveland: Robert Detrano, MD, Ph.D.
+Los autores de las bases de datos son: 1. Instituto Húngaro de Cardiologia. Budapest: Andras Janosi, MD 2. Hospital Universitario, Zúrich, Suiza: William Steinbrunn, M.D. 3. Hospital Universitario, Basilea, Suiza: Matthias Pfisterer, M.D. 4. VA Centro Médico, Long Beach y Fundación de la Clínica Cleveland: Robert Detrano, MD, Ph.D.
 
 Finalmente, cabe mencionar que en este trabajo se presenta: un análisis previo, un análisis de componentes principales, un análisis factorial y un análisis de conglomerados.
 
@@ -109,7 +109,7 @@ En las visualizaciones de los datos se observan valores pequeños desde 0,1,2 ha
 dim(data)
 ```
 
-Este conjunto de datos contiene la información de 302 pacientes (302 instancias) badados en 14 atributos. A continuación, realizamos un breve preprocesado de datos, para ello analizamos si el conjunto de datos contiene datos nulos.
+Este conjunto de datos contiene la información de 302 pacientes (302 instancias) basados en 14 atributos. A continuación, realizamos un breve preprocesado de datos, para ello analizamos si el conjunto de datos contiene datos nulos.
 
 ```{r}
 any(is.na(data))
@@ -170,7 +170,7 @@ data_num <- data_num[,-8] # 8 es el índice de la variable thalac
 head(data_num, 4)
 ```
 
-A continuación, analizamos la correlación entre las variables mediante las distancias, mediante la métrica del maximum. Para su visualización utilizamos un mapa de calor con 15 instancias. Sómo visualizamos las primeras 2 filas
+A continuación, analizamos la correlación entre las variables mediante las distancias, mediante la métrica del máximum. Para su visualización utilizamos un mapa de calor con 15 instancias. Sólo visualizamos las primeras 2 filas
 
 ```{r}
 # Matriz de distancias
@@ -285,7 +285,7 @@ ggplot(data2,
 geom_point()
 ```
 
-Antes de continuar con el analisis, con los datos estandarizados, vale la pena obsercar la relación entre la edad y los niveles de azucar en la sangre. Lo anterior se ve mejor sin la normalización.
+Antes de continuar con el análisis, con los datos estandarizados, vale la pena observar la relación entre la edad y los niveles de azúcar en la sangre. Lo anterior se ve mejor sin la normalización.
 
 ```{r}
 ggplot(data_num, 
@@ -426,6 +426,8 @@ summary(acp_cov)
 plot(acp_cov, type = "l", pch = 19)
 ```
 
+No es claro que hay un codo, es decir, no hay un punto donde la varianza deja de decrecer considerablemente. Veamos como se ven las primeras dos componentes.
+
 ```{r}
 head(acp_cov$x)
 cov(acp_cov$x[, 1:2])
@@ -445,19 +447,25 @@ diag <- cbind(data2, acp_cov$x[, 1:2])
 ggplot(diag, aes(x = PC1, y = data2$diagnosis)) + geom_point()
 ```
 
+Con una componente no es clara la utilidad de las componentes.
+
 ```{r}
 ggplot(diag, aes(x = PC1, y = PC2, color = data2$diagnosis)) + geom_point()
 ```
 
-El biplot nos sirve para resumir las relaciones entre variables, entre objetos y entre variables y objetos.
+Dos componentes no permiten ver claramente la diferencia entre las dos categorías. Por otro lado, el biplot nos sirve para resumir las relaciones entre variables, entre objetos y entre variables y objetos.
 
 ```{r fig.height=6, fig.width=6}
 biplot(acp_cov, scale = 0, cex = 0.6, col = c("blue4", "brown3"))
 ```
 
+En este caso la dispersión de las variables no permite ver las diferentes contribuciones a las primeras dos componentes principales. Esto podría deberse a la poca diferencia de varianza entre las variables.
+
 ```{r}
 plot(acp_cov, main="Varianza de las componentes")
 ```
+
+Podríamos ver de manera más clara como se está acumulando la varianza en las componentes principales.
 
 ```{r}
 prop_varianza <- acp_cov$sdev^2/sum(acp_cov$sdev^2)
@@ -472,9 +480,13 @@ ggplot(data = data.frame(prop_varianza_acum, pc = factor(1:10)),
        y = "Prop. varianza explicada acumulada")
 ```
 
-Contrario a lo que conjeturamos las variables tiene un aporte similar en cuanto a la variabilidad del dataset.
+Debido a la poca acumulación de varianza en las primeras componentes, se tiene mas de un cincuenta por ciento de la varianza en las primeras cuatro componentes principales.
 
 # Análisis factorial
+
+El objetivo de este análisis será identificar las variables más relevantes que influyen en la presencia de enfermedades cardíacas en los pacientes. Para ello, utilizaremos técnicas de extracción de factores para encontrar patrones en las variables y reducir el número de dimensiones a unas pocas variables latentes que expliquen la mayor cantidad de variabilidad en los datos.
+
+Una vez identificados los factores, trataremos de utilizar esta información para entender mejor la relación entre las diferentes variables y cómo influyen en la presencia de enfermedades cardíacas. Este análisis puede proporcionar información valiosa para mejorar la prevención de las enfermedades cardíacas en la población en general.
 
 ```{r}
 X <- data2[, -11]
@@ -495,7 +507,7 @@ Porcentajes acumulados de varianza.
 100*cumsum(Rprop$values)/p
 ```
 
-Elegimos el número de factores y obtenemos la estimación de la matriz de cargas.
+Al igual que en los componentes principales, para tener más de cincuenta por ciento de la varianza hay que tomar los primeros cuatro factores. Ahora, elegimos el número de factores y obtenemos la estimación de la matriz de cargas.
 
 ```{r}
 m <- 3
@@ -503,35 +515,35 @@ sum(Rprop$values[(m + 1):p]) # cota de la suma de cuadrados de la matriz residua
 L <- (rep(1, p) %*% t(sqrt(Rprop$values[1:m]))) * Rprop$vectors[, 1:m]
 ```
 
-Comunalidades
-
 ```{r}
 h2 <- rowSums(L^2)
 h2
 ```
-
-Unicidades
 
 ```{r}
 psi <- 1 - h2
 psi
 ```
 
-Estimación de la matriz de correlaciones R
+Estimamos la matriz de correlaciones.
 
 ```{r}
 Rbarra <- L %*%t(L) + diag(psi)
 Rbarra
 ```
 
-Matriz residual
+Se puede observar que algunas variables están moderadamente correlacionadas, mientras que otras tienen una correlación más débil. Por ejemplo, la presión arterial (trestbps) y el colesterol (chol) tienen una correlación moderada positiva de 0.26, mientras que el sexo (sex) y y el colesterol (chol) tienen una correlación negativa moderada de -0.43. La correlación más fuerte es de 0.58, que se da entre la variable que mide la lesión al miocardio (oldpeak: Depresión del ST) y la pendiente del segmento ST (slope). Veamos la matriz residual.
+
+```{r}
+head(data2,3)
+```
 
 ```{r}
 D <- R - Rbarra
 sum(D^2)
 ```
 
-Representación gráfica de las cargas en el espacio de los factores
+Ahora, la representación gráfica de las cargas en el espacio de los factores.
 
 ```{r}
 L <- as.data.frame(L)
@@ -543,14 +555,16 @@ geom_vline(xintercept = 0, lty = 2) +
 geom_text()
 ```
 
-Rotación de factores: método varimax
+No es claro que algunas variables carguen mas en uno de los factores, con excepción la variable sexo, parece tener una carga considerable en el factor dos.
+
+Realizamos una rotación de factores:
 
 ```{r}
 vmax_L <- varimax(as.matrix(L))
 vmax_L
 ```
 
-Representación gráfica de las cargas en el espacio de los factores rotados.
+Realizamos una representación gráfica de las cargas en el espacio de los factores rotados.
 
 ```{r}
 Lstar <- as.data.frame(vmax_L$loadings[, 1:m])
@@ -562,13 +576,27 @@ geom_vline(xintercept = 0, lty = 2) +
 geom_text()
 ```
 
+Con los factores rotados se ve una incidencia más fuerte de la depresión del ST inducida por el ejercicio en relación con el reposo (oldpeak), angina inducida por el ejercicio (exang), pendiente del segmento ST (slope) y en menor medida, el tipo de dolor en el pecho (cp) y el azúcar en sangre en ayunas (fbs).
+Por otro lado veamos que, sin rotaciones funciona mejor el análisis y aumentar el número de factores no mejora de manera considerable.
+
+```{r}
+diagnosis_af <- principal(data2[, -(11)], nfactors = 4)
+diagnosis_af
+```
+
+```{r}
+fa.diagram(diagnosis_af)
+```
+
+Si tomamos cuatro componentes, en la primera aparecen la depresión del ST inducida por el ejercicio (oldpeak) y la pendiente del segmento ST (slope), que como y mencionamos estás muy correlacionadas. Pero en general no permiten ver una incidencia de ciertas variables en los factores.
+
 # Análisis de conglomerados
 
 El análisis de conglomerados es una técnica de modelado de datos que se utiliza para agrupar objetos similares en grupos o clusters.
 
 ## Kmeans
 
-Entre los métodos de análisis de conglomerados, el algoritmo k-means es uno de los más populares y ampliamente utilizados. El algoritmo k-means es una técnica de particionamiento que busca dividir los datos en k clústeres, de tal manera que las observaciones dentro de cada clúster sean lo más similares posible entre sí y lo más diferentes posible de las observaciones en otros clústeres. En esta sección, se explorará el uso del algoritmo k-means. Seleccionamos K = 2 casos como centroides iniciales ya que se conoce que hay dos categorías.
+Entre los métodos de análisis de conglomerados, el algoritmo k-means es uno de los más populares y amplia mente utilizados. El algoritmo k-means es una técnica de particionamiento que busca dividir los datos en k clústeres, de tal manera que las observaciones dentro de cada clúster sean lo más similares posible entre sí y lo más diferentes posible de las observaciones en otros clústeres. En esta sección, se explorará el uso del algoritmo k-means. Seleccionamos K = 2 casos como centroides iniciales ya que se conoce que hay dos categorías.
 
 ```{r}
 head(data2, 3)
@@ -594,9 +622,23 @@ table(datos_km$cluster, data2$diagnosis)
 
 En algunos casos, puede no estar claro si el algoritmo k-means está agrupando los datos de una manera que sea consistente con la estructura real de los datos. Esto puede suceder si los datos presentan una estructura compleja o si las variables no están adecuadamente normalizadas. En este caso, es posible que el algoritmo k-means produzca clústeres que no reflejen la verdadera estructura subyacente de los datos, ya que está des-balanceado el dataset.
 
+```{r}
+ncluster <- 1:20
+distorsion <- sapply(ncluster,
+function(K) kmeans(data2[,-11],
+K, nstart = 10)$tot.withinss)
+
+plot(ncluster,
+distorsion,
+type = "b",
+pch = 19,
+xlab = "K",
+ylab = "Distorsión")
+```
+
 ## Clustering jerárquico agregativo
 
-Los métodos jerárquicos agregativos son una técnica de análisis multivariante que permiten la agrupación de observaciones en clústeres. Estos métodos se basan en la idea de que las observaciones más similares deben agruparse juntas y las menos similares deben separarse. En la práctica, este método comienza con cada observación en su propio grupo y, a continuación, combinan gradualmente los grupos más similares hasta que se alcanza un único grupo que contiene todas las instancias u observaciones. Este proceso de agrupamiento se representa mediante un dendrograma, que es una representación gráfica de la estructura jerárquica de los grupos. 
+Los métodos jerárquicos agregativos son una técnica de análisis multivariante que permiten la agrupación de observaciones en clústeres. Estos métodos se basan en la idea de que las observaciones más similares deben agruparse juntas y las menos similares deben separarse. En la práctica, este método comienza con cada observación en su propio grupo y, a continuación, combinan gradualmente los grupos más similares hasta que se alcanza un único grupo que contiene todas las instancias u observaciones. Este proceso de agrupamiento se representa mediante un dendrograma, que es una representación gráfica de la estructura jerárquica de los grupos, nuestro caso no mostramos está representación por la cantidad de datos. 
 
 ```{r}
 data_NCCo <- NbClust(data2[,-11], method = "complete")
@@ -627,6 +669,12 @@ geom_text()
 
 Básicamente está realizando un solo grupo. La técnica funcionaría mejor si balanceamos los datos.
 
-## Bibliográfica
+# Bibliografía
 
-Libro
+[1] W. Larry, All of Statistics, 1st ed. Springer Science, 2004.
+[2] R Core Team, 'R: A Language and Environment for Statistical Computing'. Vienna, Austria, 2018.
+[Online]. Available: <https://www.R-project.org/>
+[3] Rs. Team, 'RStudio: Integrated Development Environment for R'. RStudio, Inc., 2022.
+[4] Higueras. H. Manuel, Notas de Clase. 2022.
+[5] E. Brian, H. Torsten, An Introduction to Applied Multivariate Analysis with R, 1st ed. Springer Science, 2011.
+[6] P. Daniel, Análisis de Datos Multivariantes, 2014.
